@@ -1,0 +1,80 @@
+version: "2.4"  # optional since v1.27.0
+services:
+  ssl:
+    image: rmasp98/mail-ssl
+    volumes:
+      - ssl-etc-vol:/etc/letsencrypt:rw
+      - ssl-vol:/ssl:rw
+    environment:
+      - DO_TOKEN=${DO_TOKEN}
+      - SERVER_DOMAINS=${SERVER_DOMAINS}
+      - EMAIL=${CERTBOT_EMAIL}
+      - PRODUCTION=${PRODUCTION}
+    restart: always
+
+  mariadb:
+    image: rmasp98/mail-mariadb
+    volumes:
+      - mariadb-data-vol:/var/lib/mysql:rw
+    environment:
+      - DB_ROOT_PASS=${DB_ROOT_PASS}
+      - DB_POSTFIX_PASS=${DB_POSTFIX_PASS}
+      - DB_DOVECOT_PASS=${DB_DOVECOT_PASS}
+    restart: always
+
+  postfix:
+    image: rmasp98/mail-postfix
+    links:
+      - mariadb
+    ports:
+      - "25:25"
+      - "465:465"
+      - "587:587"
+    volumes:
+      - ssl-vol:/ssl:ro
+      - dovecot-lmtpd-sasl-vol:/dovecot:rw
+      - dkim-socket-vol:/opendkim:rw
+    environment:
+      - DB_PASS=${DB_POSTFIX_PASS}
+    restart: always
+
+  dkim:
+    image: rmasp98/mail-dkim
+    links:
+      - mariadb
+    depends_on:
+      - mariadb
+    volumes:
+      - dkim-socket-vol:/run/opendkim:rw
+    environment:
+      - DB_PASS=${DB_POSTFIX_PASS}
+    restart: always
+
+  dovecot:
+    image: rmasp98/mail-dovecot
+    links:
+      - mariadb
+    ports:
+      - "993:993"
+      - "995:995"
+    volumes:
+      - ssl-vol:/ssl:ro
+      - dovecot-lmtpd-sasl-vol:/postfix:rw
+    environment:
+      - DB_PASS=${DB_DOVECOT_PASS}
+    restart: always
+  
+  utils:
+    image: rmasp98/mail-utils
+    links:
+      - mariadb
+    environment:
+      - DB_PASS=${DB_ROOT_PASS}
+
+volumes:
+  mariadb-data-vol:
+  ssl-vol:
+  ssl-etc-vol:
+  dovecot-lmtpd-sasl-vol:
+  dkim-socket-vol:
+
