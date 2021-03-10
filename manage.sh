@@ -63,6 +63,9 @@ function CreateUser {
 }
 
 function StartServer {
+    if [ ! -f "docker-compose.yml" ]; then
+        curl -O https://raw.githubusercontent.com/rmasp98/mailserver/master/docker-compose.yml 2>&1 > /dev/null
+    fi
     VerifyEnvFile
     sudo docker-compose up -d $1
 }
