@@ -13,7 +13,7 @@ user = postfix
 password = ${DB_PASS}
 hosts = mariadb
 dbname = mailserver
-query = SELECT 1 FROM users WHERE email='%s'
+query = SELECT 1 FROM users WHERE email='%s' and enabled=true
 EOF
 
 cat << EOF > /etc/postfix/valias-maps.cf
@@ -27,6 +27,13 @@ EOF
 
 unset DB_PASS
 
-syslogd
-postgrey -u /var/spool/postfix/postgrey.sock -d
+if [[ ${PRODUCTION} == 0 ]]; then
+    # Disables all recieving security so we can test
+    cp /etc/postfix/main-test.cf /etc/postfix/main.cf
+fi
+
+#chown -R postfix:postfix /etc/postfix
+chmod -R o-rwx /etc/postfix
+
+syslogd -O -
 postfix start-fg

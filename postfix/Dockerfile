@@ -1,10 +1,16 @@
 FROM alpine:latest
 
-RUN apk update && apk add postfix postfix-mysql postfix-policyd-spf-perl postgrey fail2ban --no-cache
+EXPOSE 25
+EXPOSE 465
+EXPOSE 587
 
-RUN adduser -S -H -D -s /sbin/nologin policyd-spf 
+VOLUME /ssl
+VOLUME /dovecot
 
-ADD fail2ban/ /etc/
+RUN apk update && apk add postfix postfix-mysql --no-cache
+
+RUN rm -rf $(find /etc/postfix/* | grep -v "postfix-files\|dynamicmaps.cf")
+
 ADD *.cf /etc/postfix/
 ADD entrypoint.sh .
 

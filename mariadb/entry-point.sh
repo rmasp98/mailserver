@@ -9,7 +9,7 @@ if [ ! -d "/var/lib/mysql/mailserver" ]; then
     killall -9 mysqld_safe mariadbd
     apk del mysql-client gettext
 fi
-unset MYSQL_ROOT_PASS MYSQL_POSTFIX_PASS MYSQL_DOVECOT_PASS
+unset DB_ROOT_PASS DB_POSTFIX_PASS DB_DOVECOT_PASS DB_ROUNDCUBE_PASS POSTMASTER_PASS
 rm db-setup.sql
 
 mysqld_safe --user=mysql --skip-networking=0 --skip-bind-address

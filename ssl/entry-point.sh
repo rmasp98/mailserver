@@ -28,8 +28,10 @@ EOF
     echo -e "0\t1\t1\t*/2\t*\tcertbot renew && cp /etc/letsencrypt/live/${MAIN_DOMAIN}/* /ssl" >> /etc/crontabs/root
     crond -f
 else
-    apk add openssl
-    openssl req  -nodes -new -x509 -subj /ou=example.com \
-        -keyout /ssl/privkey.pem -out /ssl/fullchain.pem
+    if [ ! -f "/ssl/fullchain.pem" ]; then
+        apk add openssl
+        openssl req  -nodes -new -x509 -subj /ou=example.com \
+            -keyout /ssl/privkey.pem -out /ssl/fullchain.pem
+    fi
     sleep infinity
 fi

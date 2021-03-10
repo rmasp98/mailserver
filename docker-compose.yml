@@ -14,18 +14,23 @@ services:
 
   mariadb:
     image: rmasp98/mail-mariadb
+    ports:
+      - "127.0.0.1:3306:3306"
     volumes:
       - mariadb-data-vol:/var/lib/mysql:rw
     environment:
       - DB_ROOT_PASS=${DB_ROOT_PASS}
       - DB_POSTFIX_PASS=${DB_POSTFIX_PASS}
       - DB_DOVECOT_PASS=${DB_DOVECOT_PASS}
+      - DB_ROUNDCUBE_PASS=${DB_ROUNDCUBE_PASS}
+      - POSTMASTER_PASS=${POSTMASTER_PASS}
     restart: always
 
   postfix:
     image: rmasp98/mail-postfix
     links:
       - mariadb
+      - rspamd
     ports:
       - "25:25"
       - "465:465"
@@ -33,21 +38,9 @@ services:
     volumes:
       - ssl-vol:/ssl:ro
       - dovecot-lmtpd-sasl-vol:/dovecot:rw
-      - dkim-socket-vol:/opendkim:rw
     environment:
       - DB_PASS=${DB_POSTFIX_PASS}
-    restart: always
-
-  dkim:
-    image: rmasp98/mail-dkim
-    links:
-      - mariadb
-    depends_on:
-      - mariadb
-    volumes:
-      - dkim-socket-vol:/run/opendkim:rw
-    environment:
-      - DB_PASS=${DB_POSTFIX_PASS}
+      - PRODUCTION=${PRODUCTION}
     restart: always
 
   dovecot:
@@ -55,15 +48,52 @@ services:
     links:
       - mariadb
     ports:
+      - "143:143"
       - "993:993"
-      - "995:995"
+      - "4190:4190"
     volumes:
       - ssl-vol:/ssl:ro
       - dovecot-lmtpd-sasl-vol:/postfix:rw
+      - mail-vol:/var/mail:rw
     environment:
       - DB_PASS=${DB_DOVECOT_PASS}
+      - CONTROLLER_PASS=${CONTROLLER_PASS}
+      - POSTMASTER_PASS=${POSTMASTER_PASS}
     restart: always
-  
+
+  rspamd:
+    image: rmasp98/mail-rspamd
+    links:
+      - mariadb
+    volumes:
+      - redis-vol:/var/lib/redis:rw
+    environment:
+      - DB_PASS=${DB_POSTFIX_PASS}
+      - CONTROLLER_PASS=${CONTROLLER_PASS}
+    restart: always
+
+  roundcube:
+    image: rmasp98/mail-roundcube
+    depends_on:
+      - mariadb
+    links:
+      - mariadb
+      - postfix
+      - dovecot
+    ports:
+      - "443:443"
+    volumes:
+      - ssl-vol:/ssl:ro
+    environment:
+      - DB_PASS=${DB_ROUNDCUBE_PASS}
+      - IMAP_SERVER=${ROUNDCUBE_IMAP_SERVER}
+      - SMTP_SERVER=${ROUNDCUBE_SMTP_SERVER}
+      - NAME=${ROUNDCUBE_WEBNAME}
+      - SKIN=${ROUNDCUBE_SKIN}
+      - PLUGINS=${ROUNDCUBE_PLUGINS}
+      - PRODUCTION=${PRODUCTION}
+    restart: always
+
   utils:
     image: rmasp98/mail-utils
     links:
@@ -76,5 +106,7 @@ volumes:
   ssl-vol:
   ssl-etc-vol:
   dovecot-lmtpd-sasl-vol:
+  mail-vol:
   dkim-socket-vol:
-
+  redis-vol:
+  roundcube-vol:
