@@ -47,8 +47,8 @@ CREATE TABLE IF NOT EXISTS mailsync (
     username    varchar(50) NOT NULL,
     password    varchar(50) NOT NULL,
     host        varchar(50) NOT NULL,
-    port        int(11) NOT NULL,
-    flags       varchar(100),
+    ssl_type    ENUM('None', 'STARTTLS', 'IMAPS') NOT NULL,
+    mappings    varchar(100),
 
     PRIMARY KEY (id),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE

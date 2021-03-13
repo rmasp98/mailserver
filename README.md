@@ -10,6 +10,7 @@ Features:
  - Spam filter using rspamd (also learns from emails added and removed from spam folder)
  - Roundcube web mail to get access to mail in the browser
  - Server side filters manageable by users through managesieve protocol
+ - Capacity to sink other mail boxes into your mailboxes here
 
 TODO:
  - virtual folders (apparenty called mailboxes)
@@ -23,12 +24,7 @@ TODO:
    - github.com/docker/cli/cli/compose has go code for parsing compose file
    - Probably split client and server off to different repo
    - Learn how to do go binary only container
- - Pull emails from other mailboxes
-   - Primarily gmail but could look into general one too
-   - Maybe write a plugin for roundcube?
  - Harden docker images
    - Dovecot and postfix can chroot
    - Stop everything running as root
 
-Stupid ass SQL query to get regex working in script
-insert into mailsync (user_id, username, password, host, port, flags) values (2, 'rossmaspero@gmail.com', 'hvxuhzyiplnvdwmq', 'imap.gmail.com', 993, '"--gmail1" "--regextrans2" "s#All\ Mail#Gmail#"');

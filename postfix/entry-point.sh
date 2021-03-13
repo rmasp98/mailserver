@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 cat << EOF > /etc/postfix/vdomains.cf
 user = postfix
@@ -32,8 +32,9 @@ if [[ ${PRODUCTION} == 0 ]]; then
     cp /etc/postfix/main-test.cf /etc/postfix/main.cf
 fi
 
-#chown -R postfix:postfix /etc/postfix
 chmod -R o-rwx /etc/postfix
 
 syslogd -O -
-postfix start-fg
+
+# Run CMD
+exec "$@"

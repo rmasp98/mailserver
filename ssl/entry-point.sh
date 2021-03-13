@@ -1,9 +1,5 @@
 #!/bin/sh --
 
-if [ ! -d /ssl ]; then
-    mkdir /ssl
-fi
-
 if [ ${PRODUCTION} == 1 ]; then
     cat << EOF > /secret.txt
 dns_digitalocean_token = ${DO_TOKEN}
@@ -26,12 +22,20 @@ EOF
     
     # Creates cronjob to renew certificates every two months
     echo -e "0\t1\t1\t*/2\t*\tcertbot renew && cp /etc/letsencrypt/live/${MAIN_DOMAIN}/* /ssl" >> /etc/crontabs/root
-    crond -f
 else
     if [ ! -f "/ssl/fullchain.pem" ]; then
         apk add openssl
-        openssl req  -nodes -new -x509 -subj /ou=example.com \
-            -keyout /ssl/privkey.pem -out /ssl/fullchain.pem
+        cat << EOF > cert.conf
+$(cat /etc/ssl/openssl.cnf)
+[SAN]
+subjectAltName=DNS:dovecot,DNS:postfix,DNS:roundcube
+EOF
+        openssl req  -nodes -new -x509 \
+            -subj "/C=US/ST=CA/O=Acme, Inc./CN=example.com"  \
+            -keyout /ssl/privkey.pem -out /ssl/fullchain.pem \
+            -reqexts SAN -extensions SAN -config cert.conf
     fi
-    sleep infinity
 fi
+
+# Run CMD
+"$@"

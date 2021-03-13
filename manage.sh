@@ -14,6 +14,7 @@ function Usage {
     echo "          --password pw       Password for new user"
     echo "          --domain domain     Domain for the new user"
     echo "  start                       Start mailserver"
+    echo "      --pull                  Pull latest versions from dockerhub"
     echo "  restart <component>         Restart component (all if no component)"
     echo "      --del-vols              Delete volumes when restarting (only for all)"
     echo "      --rebuild               Rebuild image before starting again"
@@ -67,6 +68,9 @@ function StartServer {
         curl -O https://raw.githubusercontent.com/rmasp98/mailserver/master/docker-compose.yml 2>&1 > /dev/null
     fi
     VerifyEnvFile
+    if [ ${PULL} -eq 1 ]; then
+        sudo docker-compose pull
+    fi
     sudo docker-compose up -d $1
 }
 
@@ -159,6 +163,7 @@ FUNC=""
 STOP_FLAGS=""
 REBUILD=0
 PUSH=0
+PULL=0
 COMPONENT=""
 while true ; do
     case $1 in
@@ -178,6 +183,8 @@ while true ; do
             REBUILD=1; shift 1;;
         --push)
             PUSH=1; shift 1;;
+        --pull)
+            PULL=1; shift 1;;
         create)
             case $2 in
                 domain)

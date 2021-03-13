@@ -28,15 +28,17 @@ chmod 500 /var/mail/sieve/global/rspamd-curl.sh
 chown vmail:vmail -R /var/mail
 
 # Create cron job to retrieve mail from other servers
-echo -e "*/15\t*\t*\t*\t*\t/var/imapsync/mail-sync.sh" > /etc/crontabs/imapsync
+echo -e "*/15\t*\t*\t*\t*\t/var/mbsync/mail-sync.sh" > /etc/crontabs/mbsync
 
 # Save postmaster password to file for imapsync 
-echo ${POSTMASTER_PASS} > /var/imapsync/postmaster-pass
-chmod -R go-rwx /var/imapsync
-chmod  u+x /var/imapsync/mail-sync.sh
-chown -R imapsync /var/imapsync
+echo ${POSTMASTER_PASS} > /var/mbsync/postmaster-pass
+chmod  u+x /var/mbsync/mail-sync.sh
+chmod -R go-rwx /var/mbsync
+chown -R mbsync:mbsync /var/mbsync
 
 # This monitors for changes to certificates and reloads dovecot
 find /ssl | entr dovecot reload &
 crond -L /dev/stdout -b
-/usr/sbin/dovecot -F
+
+# Run CMD
+exec "$@"
