@@ -80,7 +80,8 @@ function VerifyEnvFile {
    
     vars=("DB_ROOT_PASS" "DB_POSTFIX_PASS" "DB_DOVECOT_PASS" "DB_ROUNDCUBE_PASS" "POSTMASTER_PASS" "CONTROLLER_PASS"
           "DO_TOKEN" "SERVER_DOMAINS" "CERTBOT_EMAIL" "PRODUCTION"  
-          "ROUNDCUBE_IMAP_SERVER" "ROUNDCUBE_SMTP_SERVER" "ROUNDCUBE_WEBNAME" "ROUNDCUBE_SKIN" "ROUNDCUBE_PLUGINS")
+          "IMAP_SERVER" "SMTP_SERVER" 
+          "ROUNDCUBE_WEBNAME" "ROUNDCUBE_SKIN" "ROUNDCUBE_PLUGINS")
 
     for variable in ${vars[@]}; do
         local value=""
@@ -103,9 +104,9 @@ function VerifyEnvFile {
                 if [[ "${prodcheck}" == "y" ]]; then
                     value=1
                 fi
-            elif [ "${variable}" == "ROUNDCUBE_IMAP_SERVER" ]; then
+            elif [ "${variable}" == "IMAP_SERVER" ]; then
                 read -p "Enter the FQDN of the imap server: " value
-            elif [ "${variable}" == "ROUNDCUBE_SMTP_SERVER" ]; then
+            elif [ "${variable}" == "SMTP_SERVER" ]; then
                 read -p "Enter the FQDN of the smtp server: " value
             elif [ "${variable}" == "ROUNDCUBE_WEBNAME" ]; then
                 read -p "Enter the name shown in webmail: " value

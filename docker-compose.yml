@@ -28,6 +28,7 @@ services:
 
   postfix:
     image: rmasp98/mail-postfix
+    hostname: ${SMTP_SERVER}
     links:
       - mariadb
       - rspamd
@@ -45,6 +46,7 @@ services:
 
   dovecot:
     image: rmasp98/mail-dovecot
+    hostname: ${IMAP_SERVER}
     links:
       - mariadb
     ports:
@@ -86,8 +88,8 @@ services:
       - ssl-vol:/ssl:ro
     environment:
       - DB_PASS=${DB_ROUNDCUBE_PASS}
-      - IMAP_SERVER=${ROUNDCUBE_IMAP_SERVER}
-      - SMTP_SERVER=${ROUNDCUBE_SMTP_SERVER}
+      - IMAP_SERVER=${IMAP_SERVER}
+      - SMTP_SERVER=${SMTP_SERVER}
       - NAME=${ROUNDCUBE_WEBNAME}
       - SKIN=${ROUNDCUBE_SKIN}
       - PLUGINS=${ROUNDCUBE_PLUGINS}

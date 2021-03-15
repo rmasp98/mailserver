@@ -28,3 +28,6 @@ TODO:
    - Dovecot and postfix can chroot
    - Stop everything running as root
 
+BUGS:
+ - rspamd needs to know the correct selector
+ - postfix needs to have the correct hostname
