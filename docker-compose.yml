@@ -1,4 +1,4 @@
-version: "2.4"  # optional since v1.27.0
+version: "3.8"
 services:
   ssl:
     image: rmasp98/mail-ssl
@@ -9,7 +9,14 @@ services:
       - DO_TOKEN=${DO_TOKEN}
       - SERVER_DOMAINS=${SERVER_DOMAINS}
       - EMAIL=${CERTBOT_EMAIL}
-      - PRODUCTION=${PRODUCTION}
+      - PRODUCTION=${PRODUCTION} 
+    networks:
+      mailserver-network:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     restart: always
 
   mariadb:
@@ -24,6 +31,15 @@ services:
       - DB_DOVECOT_PASS=${DB_DOVECOT_PASS}
       - DB_ROUNDCUBE_PASS=${DB_ROUNDCUBE_PASS}
       - POSTMASTER_PASS=${POSTMASTER_PASS}
+    networks:
+      mailserver-network:
+        aliases:
+          - mariadb
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     restart: always
 
   postfix:
@@ -42,6 +58,15 @@ services:
     environment:
       - DB_PASS=${DB_POSTFIX_PASS}
       - PRODUCTION=${PRODUCTION}
+    networks:
+      mailserver-network:
+        aliases:
+          - ${SMTP_SERVER}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     restart: always
 
   dovecot:
@@ -61,6 +86,15 @@ services:
       - DB_PASS=${DB_DOVECOT_PASS}
       - CONTROLLER_PASS=${CONTROLLER_PASS}
       - POSTMASTER_PASS=${POSTMASTER_PASS}
+    networks:
+      mailserver-network:
+        aliases:
+          - ${IMAP_SERVER}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     restart: always
 
   rspamd:
@@ -72,6 +106,15 @@ services:
     environment:
       - DB_PASS=${DB_POSTFIX_PASS}
       - CONTROLLER_PASS=${CONTROLLER_PASS}
+    networks:
+      mailserver-network:
+        aliases:
+          - rspamd
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     restart: always
 
   roundcube:
@@ -94,6 +137,13 @@ services:
       - SKIN=${ROUNDCUBE_SKIN}
       - PLUGINS=${ROUNDCUBE_PLUGINS}
       - PRODUCTION=${PRODUCTION}
+    networks:
+      mailserver-network:
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     restart: always
 
   utils:
@@ -102,6 +152,13 @@ services:
       - mariadb
     environment:
       - DB_PASS=${DB_ROOT_PASS}
+    networks:
+      mailserver-network:
+
+networks:
+  mailserver-network:
+    driver: bridge
+      #    enable_ipv6: true
 
 volumes:
   mariadb-data-vol:

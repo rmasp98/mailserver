@@ -2,16 +2,19 @@
 
 config_file="/var/mbsync/sync.conf"
 
-touch ${config_file}
-trap "rm -f ${config_file}" 0
+# If file exists then command still running
+if [ ! -f ${config_file} ]; then
 
-mysql -u dovecot -p${DB_PASS} -h mariadb -D mailserver -N \
-  -e "SELECT (select email from users where id=user_id), username, password, host, ssl_type, mappings FROM mailsync" | \
-  while read -r email username password host ssl_type mappings; do
-    user=$(echo ${email} | cut -d'@' -f 1)
-    domain=$(echo ${email} | cut -d'@' -f 2)
+    touch ${config_file}
+    trap "rm -f ${config_file}" 0
 
-    cat << EOF >> ${config_file}
+    mysql -u dovecot -p${DB_PASS} -h mariadb -D mailserver -N \
+    -e "SELECT (select email from users where id=user_id), username, password, host, ssl_type, mappings FROM mailsync" | \
+      while read -r email username password host ssl_type mappings; do
+        user=$(echo ${email} | cut -d'@' -f 1)
+        domain=$(echo ${email} | cut -d'@' -f 2)
+
+        cat << EOF >> ${config_file}
 IMAPStore           "${username}-${host}"
 Host                "${host}"
 User                "${username}"
@@ -27,11 +30,24 @@ CertificateFile     /ssl/fullchain.pem
 
 EOF
 
-    IFS=","
-    for mapping in ${mappings}; do
-        source_mb=$(echo ${mapping} | cut -d'=' -f 1)
-        destination_mb=$(echo ${mapping} | cut -d'=' -f 2)
-        cat << EOF >> ${config_file}
+        if [ "${mappings}" = "" ]; then
+            cat << EOF >> ${config_file}
+Channel             "${username}-${host}"
+Master              ":${username}-${host}:"
+Slave               ":${email}:"
+Create              Slave
+Expunge             Slave
+Sync                Pull
+Pattern             *
+
+EOF
+        else
+
+            IFS=","
+            for mapping in ${mappings}; do
+                source_mb=$(echo ${mapping} | cut -d'=' -f 1)
+                destination_mb=$(echo ${mapping} | cut -d'=' -f 2)
+                cat << EOF >> ${config_file}
 Channel             "${username}-${host}-${source_mb}"
 Master              ":${username}-${host}:${source_mb}"
 Slave               ":${email}:${destination_mb}"
@@ -40,7 +56,9 @@ Expunge             Slave
 Sync                Pull
 
 EOF
+            done
+        fi
     done
-done
 
-mbsync -c ${config_file} --all --pull --create
+    mbsync -c ${config_file} --all --pull --create
+fi

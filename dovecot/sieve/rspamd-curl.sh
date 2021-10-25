@@ -5,7 +5,7 @@ if [ "$1" != "ham" ] && [ "$1" != "spam" ]; then
     exit 1;
 fi
 
-read password < controller_password
+read password < /var/mail/sieve/global/controller_password
 
 RESULT=$(/usr/bin/curl -s -H "Password: ${password}" --data-binary -d @- http://rspamd:11334/learn$1)
 STATUS=$?

@@ -9,6 +9,9 @@ $config['language'] = 'en_UK';
 $config['mime_param_folding'] = 0;
 $config['smtp_debug'] = true;
 
+$config['junk_mbox'] = 'Spam';
+$config['trash_mbox'] = 'Bin';
+
 $config['managesieve_port'] = 4190;
 $config['managesieve_auth_type'] = 'plain';
 $config['managesieve_usetls'] = true;

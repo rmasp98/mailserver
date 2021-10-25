@@ -6,7 +6,7 @@ Features:
  - OpenDKIM, SPF and greylisting (you need to add the txt fields to DNS)
  - Let's Encrpyt certificates with auto renewal
  - Multiple domain hosting
- - Automatic user aliasing (e.g. user-facebook@example.com will go to user@example.com mailbox)
+ - Automatic user aliasing (e.g. user.facebook@example.com will go to user@example.com mailbox)
  - Spam filter using rspamd (also learns from emails added and removed from spam folder)
  - Roundcube web mail to get access to mail in the browser
  - Server side filters manageable by users through managesieve protocol
